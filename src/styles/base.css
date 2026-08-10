@@ -1,0 +1,201 @@
+/**
+ * Base element styles and the shared type scale.
+ *
+ * Type rule of thumb used throughout: anything above ~32px takes negative
+ * letter-spacing (-0.028em to -0.035em), anything below sits near zero.
+ * Tight tracking at display sizes is most of what separates a considered
+ * headline from a default one.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  /* Anchor targets clear the 48px sticky nav. */
+  scroll-padding-top: 64px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* Visible only to keyboard users, never on mouse click. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------- type scale ---------- */
+
+h1 {
+  font-size: clamp(2.75rem, 7.5vw, 5.5rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
+
+h2 {
+  font-size: clamp(1.875rem, 4.5vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  line-height: 1.1;
+}
+
+h3 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+h4 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* ---------- layout primitives ---------- */
+
+.container {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+section {
+  padding-block: var(--section-y);
+  position: relative;
+}
+
+/** Alternating tinted band. Depth via surface step, never a border. */
+.band {
+  background: var(--surface-1);
+  border-block: 0.5px solid var(--hairline);
+}
+
+.eyebrow,
+.section-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.section-label {
+  margin-bottom: 20px;
+}
+
+.lede {
+  font-size: 17px;
+  color: var(--text-2);
+  line-height: 1.6;
+  max-width: 56ch;
+}
+
+/**
+ * Two-tone display type.
+ *
+ * `background-clip: text` paints the gradient through the glyphs. The bottom
+ * padding stops descenders (g, y, p) being clipped by the background box.
+ */
+.grad {
+  background-image: linear-gradient(101deg, var(--g1) 0%, var(--g2) 48%, var(--g3) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  padding-bottom: 0.08em;
+}
+
+/** Screen-reader-only text that still receives focus. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/**
+ * Scroll reveal.
+ *
+ * Elements start offset and transparent; `.is-visible` is added by an
+ * IntersectionObserver (see scripts/reveal.ts). `--i` staggers siblings so a
+ * grid resolves in sequence rather than all at once.
+ */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/**
+ * Respect the OS "reduce motion" setting.
+ *
+ * Content must be fully visible without animation, so reveals are forced on
+ * rather than merely having their transition removed. The canvases check the
+ * same media query in JS and render a single static frame.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

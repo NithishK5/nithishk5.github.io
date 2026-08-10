@@ -1,0 +1,33 @@
+# Type-checks and builds every pull request, so a broken frontmatter field or a
+# type error is caught before it reaches main.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Validates .astro templates, TypeScript, and every content collection
+      # entry against its Zod schema.
+      - name: Type check
+        run: npm run check
+
+      - name: Build
+        run: npm run build

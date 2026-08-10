@@ -1,0 +1,60 @@
+---
+/**
+ * Project detail page.
+ *
+ * `getStaticPaths` enumerates the collection at build time, so every project
+ * becomes a static HTML file with no runtime data fetching.
+ */
+import type { GetStaticPaths } from 'astro'
+import type { CollectionEntry } from 'astro:content'
+import { getCollection, render } from 'astro:content'
+import Base from '~/layouts/Base.astro'
+
+/** Declaring Props is what types `Astro.props`; getStaticPaths cannot infer it. */
+interface Props {
+  project: CollectionEntry<'projects'>
+}
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const projects = await getCollection('projects', ({ data }) => !data.draft)
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }))
+}
+
+const { project } = Astro.props
+const { Content } = await render(project)
+const { title, summary, category, stack, repo, demo, year } = project.data
+---
+
+<Base title={title} description={summary} type="article">
+  <section>
+    <div class="container">
+      <p class="section-label reveal">{category} · {year}</p>
+      <h2 class="grad reveal">{title}</h2>
+      <p class="lede reveal" style="--i: 1; margin-top: 20px">{summary}</p>
+
+      {
+        stack.length > 0 && (
+          <p class="entry-meta reveal" style="--i: 2; margin-top: 24px">
+            {stack.join(' · ')}
+          </p>
+        )
+      }
+
+      <div class="cta reveal" style="--i: 3; justify-content: flex-start; margin-top: 28px">
+        {repo && <a class="btn" href={repo}>View source</a>}
+        {demo && <a class="btn btn-ghost" href={demo}>Live demo&nbsp;›</a>}
+      </div>
+
+      <article class="prose reveal" style="--i: 4; margin-top: 72px">
+        <Content />
+      </article>
+
+      <p style="margin-top: 72px">
+        <a class="btn btn-ghost" href="/projects" style="padding-left: 0">‹&nbsp;All projects</a>
+      </p>
+    </div>
+  </section>
+</Base>

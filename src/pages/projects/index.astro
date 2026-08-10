@@ -1,0 +1,46 @@
+---
+/**
+ * Projects index — every non-draft project, grouped by category.
+ */
+import { getCollection } from 'astro:content'
+import Base from '~/layouts/Base.astro'
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.year - a.data.year || a.data.title.localeCompare(b.data.title),
+)
+
+/** Group into a Map so insertion order follows the sort above. */
+const byCategory = new Map<string, typeof projects>()
+for (const project of projects) {
+  const bucket = byCategory.get(project.data.category) ?? []
+  bucket.push(project)
+  byCategory.set(project.data.category, bucket)
+}
+---
+
+<Base title="Projects" description="Projects built by Nithish Kumar Megarajan across machine learning, natural language processing, security and simulation.">
+  <section>
+    <div class="container">
+      <p class="section-label reveal">Projects</p>
+      <h2 class="grad reveal">Everything I've shipped.</h2>
+      <p class="lede reveal" style="--i: 1; margin-top: 20px">
+        {projects.length} projects, newest first. Source is on GitHub for all of them.
+      </p>
+
+      {
+        [...byCategory].map(([category, items]) => (
+          <div style="margin-top: 72px">
+            <h3 class="section-label reveal">{category}</h3>
+            {items.map((project, i) => (
+              <a class="entry reveal" style={`--i: ${i % 4}`} href={`/projects/${project.id}`}>
+                <p class="entry-meta">{project.data.year}</p>
+                <h4>{project.data.title}</h4>
+                <p>{project.data.summary}</p>
+              </a>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Base>

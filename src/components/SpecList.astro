@@ -1,0 +1,41 @@
+---
+/**
+ * Expanding pills for grouped detail.
+ *
+ * Each trigger is a real <button> so keyboard and screen-reader support come
+ * for free. Visual state is driven entirely from the `data-open` attribute.
+ */
+export interface Spec {
+  label: string
+  body: string
+}
+
+interface Props {
+  specs: Spec[]
+}
+
+const { specs } = Astro.props
+---
+
+<div class="specs">
+  {
+    specs.map((spec, i) => (
+      <div class="spec reveal" style={`--i: ${i}`} data-spec data-open="false">
+        <button class="spec-trigger" data-spec-trigger aria-expanded="false">
+          <span class="spec-plus" aria-hidden="true" />
+          {spec.label}
+        </button>
+        <div class="spec-body">
+          <div>
+            <p>{spec.body}</p>
+          </div>
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<script>
+  import { mountSpecs } from '~/scripts/specs'
+  mountSpecs()
+</script>

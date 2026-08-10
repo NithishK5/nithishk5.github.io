@@ -1,0 +1,35 @@
+---
+/**
+ * Sticky translucent navigation.
+ *
+ * The backdrop filter applies a saturation boost before the blur — without it,
+ * translucent chrome desaturates whatever sits behind it and reads grey.
+ */
+import { site } from '~/site.config'
+
+const path = Astro.url.pathname
+/** Marks the active route, tolerating both /projects and /projects/ forms. */
+const isCurrent = (href: string): boolean =>
+  href !== '/' && href.startsWith('/') && path.replace(/\/$/, '') === href.replace(/\/$/, '')
+---
+
+<nav class="nav" aria-label="Primary">
+  <a class="mark" href="/" aria-label={`${site.name} — home`}>nk.</a>
+
+  {
+    site.nav.map((item) => (
+      <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+        {item.label}
+      </a>
+    ))
+  }
+
+  <button class="theme-toggle" data-theme-toggle aria-label="Switch to light theme">◐</button>
+</nav>
+
+<script>
+  import { mountThemeToggle } from '~/scripts/theme'
+
+  const button = document.querySelector<HTMLElement>('[data-theme-toggle]')
+  if (button) mountThemeToggle(button)
+</script>

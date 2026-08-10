@@ -1,0 +1,226 @@
+---
+/**
+ * Homepage.
+ *
+ * A single scrolling narrative: who, then proof, then capability, then history,
+ * then a way to get in touch. Featured projects are pulled from the content
+ * collection, so adding a markdown file with `featured: true` surfaces it here.
+ */
+import { getCollection } from 'astro:content'
+import DotField from '~/components/DotField.astro'
+import ProjectCard from '~/components/ProjectCard.astro'
+import SpecList, { type Spec } from '~/components/SpecList.astro'
+import Base from '~/layouts/Base.astro'
+import { site } from '~/site.config'
+
+const featured = (await getCollection('projects', ({ data }) => data.featured && !data.draft))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 6)
+
+const specs: Spec[] = [
+  {
+    label: 'Machine learning',
+    body: 'PyTorch and TensorFlow for deep learning, scikit-learn for classical modelling. Transformer fine-tuning with LoRA, retrieval-augmented generation, and evaluation harnesses including LLM-as-judge.',
+  },
+  {
+    label: 'Languages',
+    body: 'Python as a first language, day to day. Java for systems work, TypeScript and JavaScript across the web stack, and SQL for anything that has to be queried rather than guessed at.',
+  },
+  {
+    label: 'Interfaces',
+    body: 'Vue and React, with a preference for hand-written CSS over utility frameworks when a design needs precision. Canvas and WebGL for generative and data-driven visuals.',
+  },
+  {
+    label: 'Infrastructure',
+    body: 'Docker for reproducible environments, GitHub Actions for continuous integration and deployment, and enough Linux to keep a server honest.',
+  },
+]
+
+/**
+ * Experience, grouped into work and study.
+ *
+ * `where` carries the institution and location, `body` says what the time was
+ * actually spent on. Anything with no `body` renders as a compact row, which is
+ * what keeps earlier schooling from taking the same visual weight as a degree.
+ */
+interface TimelineEntry {
+  when: string
+  title: string
+  where: string
+  body?: string
+}
+
+const work: TimelineEntry[] = [
+  {
+    when: '2021 to 2022',
+    title: 'Software Engineer, Intern',
+    where: 'SMT · Remote, India',
+    body: 'My industrial placement year. I automated backend workflows in Python that cut data retrieval latency by 30%, and built an LSTM based classifier that routed incoming CRM queries to the right place instead of them being triaged by hand. Working with the product and dev teams to ship those features improved response efficiency by around 25%.',
+  },
+  {
+    when: '2018 to now',
+    title: 'Part time hospitality',
+    where: 'Glasgow, UK and Melbourne, Australia',
+    body: 'Seven years of part time work running alongside both degrees. It is not engineering, but service under pressure is where I learned to stay organised, prioritise on the spot and keep a team moving when everything arrives at once.',
+  },
+]
+
+const education: TimelineEntry[] = [
+  {
+    when: 'Mar 2025 to Dec 2026',
+    title: 'Master of Artificial Intelligence',
+    where: 'Monash University · Melbourne, Australia',
+    body: ' Machine Learning, Software Design, NLP, Deep Learning, Optimisation, Multi-Agent Systems',
+  },
+  {
+    when: 'Sep 2019 to Jun 2024',
+    title: 'BSc (Hons) Software Engineering',
+    where: 'University of Strathclyde · Glasgow, UK',
+    body: 'Systems, algorithms and the software engineering foundations most of my earlier projects came out of.',
+  },
+  {
+    when: 'Sep 2018 to Aug 2019',
+    title: 'Foundation in Engineering and Sciences',
+    where: 'University of Strathclyde · Glasgow, UK',
+  },
+  {
+    when: '2016 to 2018',
+    title: 'CBSE, Senior Secondary',
+    where: 'The Velammal International School · Chennai, India',
+  },
+  {
+    when: '2010 to 2016',
+    title: 'CBSE, Secondary',
+    where: 'Sri Vijay Vidyashram · Dharmapuri, India',
+  },
+]
+---
+
+<Base>
+  <header class="hero" data-hero>
+    <p class="eyebrow">{site.location}</p>
+    <h1 class="grad">{site.name}</h1>
+    <p class="hero-sub">{site.tagline}</p>
+
+    <div class="cta">
+      <a class="btn" href="/projects">View work</a>
+      <a class="btn btn-ghost" href="/CV.pdf">Résumé&nbsp;›</a>
+    </div>
+
+    <p class="scroll-hint" aria-hidden="true">Scroll</p>
+  </header>
+
+  <section class="band" id="about">
+    <div class="container">
+      <p class="statement grad reveal">
+        Curiosity about how things work, and how people could work with them.
+      </p>
+      <p class="lede reveal" style="--i: 1; margin-top: 24px">
+        I'm finishing a Master's in Artificial Intelligence at Monash, after a Computer Science
+        degree at Strathclyde. Most of what I build sits where machine learning meets an interface
+        someone actually has to use.
+      </p>
+
+      {/*
+        Each figure is wrapped in a span so it can be translated inside an
+        overflow-hidden parent — the value rises into place rather than fading.
+        `data-count` opts a figure into the count-up animation.
+      */}
+      <div class="stats">
+        <div class="stat reveal" style="--i: 0">
+          <p class="stat-k"><span>Masters</span></p>
+          <p class="stat-v">Artificial Intelligence, Monash University</p>
+        </div>
+        <div class="stat reveal" style="--i: 1">
+          <p class="stat-k"><span>BSc</span></p>
+          <p class="stat-v">Software Engineering (Hons), University of Strathclyde</p>
+        </div>
+        <div class="stat reveal" style="--i: 2">
+          <p class="stat-k"><span data-count="20" data-count-suffix="+">20+</span></p>
+          <p class="stat-v">Projects shipped across ML, web and systems</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="section-label reveal">Selected work</p>
+          <h2 class="reveal">Things I've built.</h2>
+        </div>
+        <a class="btn btn-ghost reveal" href="/projects">All projects&nbsp;›</a>
+      </div>
+
+      <div class="grid">
+        {featured.map((project, i) => <ProjectCard project={project} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="expertise">
+    <div class="container">
+      <p class="section-label reveal">Expertise</p>
+      <h2 class="reveal" style="margin-bottom: 48px">What I work with.</h2>
+      <SpecList specs={specs} />
+    </div>
+  </section>
+
+  <section id="experience" style="overflow: hidden">
+    <DotField />
+    <div class="container" style="position: relative; z-index: 1">
+      <p class="section-label reveal">Experience</p>
+      <h2 class="reveal" style="margin-bottom: 56px">Where I've been.</h2>
+
+      <p class="timeline-group reveal">Work</p>
+      {
+        work.map((row, i) => (
+          <div class="timeline-row reveal" style={`--i: ${i}`}>
+            <p class="timeline-when">{row.when}</p>
+            <div>
+              <h4>{row.title}</h4>
+              <p class="timeline-where">{row.where}</p>
+              {row.body && <p>{row.body}</p>}
+            </div>
+          </div>
+        ))
+      }
+
+      <p class="timeline-group reveal" style="margin-top: 72px">Education</p>
+      {
+        education.map((row, i) => (
+          <div class="timeline-row reveal" style={`--i: ${i}`}>
+            <p class="timeline-when">{row.when}</p>
+            <div>
+              <h4>{row.title}</h4>
+              <p class="timeline-where">{row.where}</p>
+              {row.body && <p>{row.body}</p>}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="contact band" id="contact">
+    <div class="container">
+      <h2 class="grad reveal">Let's build something.</h2>
+      <a class="contact-mail reveal" style="--i: 1" href={`mailto:${site.email}`}>{site.email}</a>
+
+      <div class="links reveal" style="--i: 2">
+        {site.socials.map((social) => <a href={social.href}>{social.label}</a>)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { mountCounters } from '~/scripts/counter'
+  import { mountHeroParallax } from '~/scripts/hero'
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]')
+  if (hero) mountHeroParallax(hero)
+
+  mountCounters()
+</script>

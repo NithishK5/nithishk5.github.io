@@ -1,0 +1,693 @@
+/**
+ * Component styles.
+ *
+ * Grouped by the component that owns them. Astro scopes styles per-component
+ * by default, but these are shared across several routes, so they live here as
+ * a single global sheet rather than being duplicated.
+ */
+
+/* ---------- generative art layers ---------- */
+
+/**
+ * The branch canvas sits behind everything, fixed to the viewport.
+ *
+ * The radial mask is essential rather than decorative: without it the branches
+ * grow straight through the centre column and compete with the type. Masking
+ * the middle out keeps them in the outer thirds, framing the content.
+ */
+.plum-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle at 50% 45%, transparent 8%, #000 72%);
+  mask-image: radial-gradient(circle at 50% 45%, transparent 8%, #000 72%);
+}
+
+.dot-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/** Establishes the stacking context that lifts content above .plum-canvas. */
+.page {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- navigation ---------- */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  font-size: 12px;
+  background: var(--nav-bg);
+  /* Saturation boost before the blur is what stops translucent chrome from
+     going grey over colourful content. */
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid var(--hairline);
+}
+
+.nav a {
+  color: var(--text-2);
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.nav a:hover,
+.nav a[aria-current='page'] {
+  color: var(--text);
+}
+
+.nav .mark {
+  font-family: var(--mono);
+  color: var(--text);
+}
+
+.theme-toggle {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--text-2);
+  font: inherit;
+  padding: 4px;
+  line-height: 1;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  min-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-inline: var(--gutter);
+  /* Hinting the compositor: the hero is transformed on every scroll frame. */
+  will-change: opacity, transform;
+}
+
+.hero h1 {
+  max-width: 14ch;
+}
+
+.hero .eyebrow {
+  margin-bottom: 24px;
+}
+
+.hero-sub {
+  font-size: clamp(1.0625rem, 2.2vw, 1.5rem);
+  color: var(--text-2);
+  letter-spacing: -0.015em;
+  line-height: 1.45;
+  max-width: 34ch;
+  margin: 28px auto 0;
+}
+
+.cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 36px;
+}
+
+.btn {
+  font-size: 14px;
+  padding: 11px 24px;
+  border-radius: 980px;
+  background: var(--accent);
+  color: #fff;
+  transition:
+    transform var(--dur-fast) var(--ease),
+    filter var(--dur-fast) var(--ease);
+}
+
+.btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: none;
+  color: var(--accent);
+  padding: 11px 8px;
+}
+
+.btn-ghost:hover {
+  filter: none;
+  transform: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.scroll-hint {
+  margin-top: 64px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  animation: bob 2.6s var(--ease) infinite;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(5px);
+    opacity: 1;
+  }
+}
+
+/* ---------- statement + stats ---------- */
+
+.statement {
+  font-size: clamp(1.625rem, 4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  line-height: 1.2;
+  max-width: 19ch;
+}
+
+/* 1px gaps over a hairline background render the grid rules without needing
+   per-cell borders that would double up at the seams. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1px;
+  background: var(--hairline);
+  border: 0.5px solid var(--hairline);
+  margin-top: 88px;
+}
+
+.stat {
+  background: var(--bg);
+  padding: 32px 28px;
+}
+
+.stat-k {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+
+  /* Clips the figure's start position so it appears from behind the edge
+     rather than fading in place. The padding keeps descenders off the mask. */
+  overflow: hidden;
+  padding-bottom: 0.06em;
+
+  /* Fixed-width digits, so a counting number cannot shift the layout. */
+  font-variant-numeric: tabular-nums;
+}
+
+/**
+ * Staged entrance for the stat cards.
+ *
+ * Three things resolve in sequence per card — the card itself, then the figure
+ * rising out of its mask, then the caption. The `--i` stagger is applied on top,
+ * so the group reads left to right rather than arriving as a block.
+ *
+ * Delays are expressed against `--i` so reordering the markup needs no CSS change.
+ */
+.stat-k > span {
+  display: block;
+  transform: translateY(110%);
+  transition: transform var(--dur-slow) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 110ms + 140ms);
+}
+
+.stat.is-visible .stat-k > span {
+  transform: none;
+}
+
+.stat-v {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 6px;
+  line-height: 1.45;
+
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 110ms + 320ms);
+}
+
+.stat.is-visible .stat-v {
+  opacity: 1;
+  transform: none;
+}
+
+/* A wider stagger than the default reveal, matching the inner timings above.
+   Scale is anchored to the bottom edge so the cards feel seated on the grid. */
+.stats .reveal {
+  transform: translateY(28px) scale(0.98);
+  transform-origin: 50% 100%;
+  transition-delay: calc(var(--i, 0) * 110ms);
+}
+
+.stats .reveal.is-visible {
+  transform: none;
+}
+
+/* Without this the figures sit hidden below their mask when motion is reduced,
+   since the transform never runs. */
+@media (prefers-reduced-motion: reduce) {
+  .stat-k > span,
+  .stats .reveal {
+    transform: none;
+  }
+
+  .stat-v {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- project cards ---------- */
+
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 56px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: var(--surface-2);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform var(--dur-base) var(--ease),
+    background var(--dur-base) var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  background: var(--surface-3);
+}
+
+.card-thumb {
+  height: 160px;
+  border-radius: 12px;
+  background: var(--surface-3);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: background var(--dur-base) var(--ease);
+}
+
+.card:hover .card-thumb {
+  background: var(--surface-1);
+}
+
+.card-thumb span {
+  font-family: var(--mono);
+  font-size: 56px;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  opacity: 0.1;
+}
+
+.card-tag {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+
+.card p {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.55;
+  margin-top: 8px;
+  flex: 1;
+}
+
+.card-more {
+  font-size: 13px;
+  color: var(--accent);
+  margin-top: 18px;
+}
+
+/* ---------- expanding spec pills ---------- */
+
+.specs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 760px;
+}
+
+/* Morphing the radius from a pill to a rounded rect is what sells the
+   open state — the shape itself reports the change, not just the content. */
+.spec {
+  background: var(--surface-2);
+  border-radius: 980px;
+  overflow: hidden;
+  transition:
+    border-radius var(--dur-base) var(--ease),
+    background var(--dur-base) var(--ease);
+}
+
+.spec[data-open='true'] {
+  border-radius: 24px;
+  background: var(--surface-3);
+}
+
+.spec-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  padding: 18px 28px;
+  text-align: left;
+}
+
+.spec-plus {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-2);
+  display: grid;
+  place-items: center;
+  position: relative;
+  transition:
+    transform var(--dur-base) var(--ease),
+    border-color var(--dur-base) var(--ease);
+}
+
+/* 135° rather than 45° so the cross rotates past square and settles. */
+.spec[data-open='true'] .spec-plus {
+  transform: rotate(135deg);
+  border-color: var(--text);
+}
+
+.spec-plus::before,
+.spec-plus::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+.spec-plus::before {
+  width: 11px;
+  height: 1.5px;
+}
+
+.spec-plus::after {
+  width: 1.5px;
+  height: 11px;
+}
+
+/* Animating grid-template-rows from 0fr to 1fr transitions to the content's
+   true height — no hardcoded max-height guess that clips long copy. */
+.spec-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--ease);
+}
+
+.spec[data-open='true'] .spec-body {
+  grid-template-rows: 1fr;
+}
+
+.spec-body > div {
+  overflow: hidden;
+}
+
+.spec-body p {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.6;
+  padding: 0 28px 24px 70px;
+  max-width: 60ch;
+}
+
+/* ---------- timeline rows ---------- */
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 32px;
+  padding-block: 28px;
+  border-top: 0.5px solid var(--hairline);
+}
+
+.timeline-row:last-child {
+  border-bottom: 0.5px solid var(--hairline);
+}
+
+.timeline-when {
+  font-size: 13px;
+  color: var(--text-3);
+  font-family: var(--mono);
+  /* Nudged to sit on the same optical baseline as the h4 beside it, which is
+     larger and therefore sits lower within its own line box. */
+  padding-top: 2px;
+}
+
+.timeline-row p {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-top: 5px;
+  line-height: 1.55;
+  max-width: 62ch;
+}
+
+/* Institution and location. Sits between the title and the description, so it
+   takes the quieter grey to keep the reading order title, place, detail. */
+.timeline-where {
+  color: var(--text-3) !important;
+  margin-top: 4px !important;
+}
+
+/* Group heading above a run of rows. Sits on the same left edge as the dates so
+   the column structure stays legible. */
+.timeline-group {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 12px;
+}
+
+/* ---------- contact + footer ---------- */
+
+.contact {
+  text-align: center;
+}
+
+.contact h2 {
+  max-width: 16ch;
+  margin-inline: auto;
+}
+
+.contact-mail {
+  display: inline-block;
+  margin-top: 28px;
+  font-size: clamp(1rem, 2.4vw, 1.375rem);
+  color: var(--accent);
+  letter-spacing: -0.015em;
+}
+
+.links {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 44px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.links a {
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.links a:hover {
+  color: var(--text);
+}
+
+.site-footer {
+  padding: 40px 0 56px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+  border-top: 0.5px solid var(--hairline);
+}
+
+/* ---------- long-form prose ---------- */
+
+.prose {
+  max-width: 68ch;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text-2);
+}
+
+.prose h2 {
+  font-size: 1.75rem;
+  color: var(--text);
+  margin: 2.2em 0 0.6em;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  color: var(--text);
+  margin: 1.8em 0 0.5em;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  margin-bottom: 1.2em;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+}
+
+.prose li {
+  margin-bottom: 0.4em;
+}
+
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.prose code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--surface-2);
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+}
+
+.prose pre {
+  background: var(--surface-2);
+  padding: 20px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin-bottom: 1.4em;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+}
+
+.prose blockquote {
+  border-left: 2px solid var(--hairline);
+  padding-left: 1.2em;
+  margin-bottom: 1.2em;
+}
+
+/* ---------- index listings ---------- */
+
+.entry {
+  display: block;
+  padding-block: 28px;
+  border-top: 0.5px solid var(--hairline);
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.entry:last-of-type {
+  border-bottom: 0.5px solid var(--hairline);
+}
+
+.entry-meta {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--mono);
+  margin-bottom: 6px;
+}
+
+.entry p {
+  font-size: 15px;
+  color: var(--text-2);
+  margin-top: 6px;
+  line-height: 1.55;
+  max-width: 60ch;
+}
+
+@media (max-width: 640px) {
+  .nav {
+    gap: 16px;
+    font-size: 11px;
+  }
+
+  .timeline-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .stats {
+    margin-top: 56px;
+  }
+
+  .spec-trigger {
+    font-size: 15px;
+    padding: 16px 20px;
+    gap: 12px;
+  }
+
+  .spec-body p {
+    padding: 0 20px 20px 56px;
+  }
+}

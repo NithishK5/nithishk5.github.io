@@ -1,0 +1,17 @@
+---
+/**
+ * Full-viewport background canvas for the branching art.
+ *
+ * Rendered once in the base layout and shared by every route. Purely
+ * decorative, so it is hidden from assistive technology entirely.
+ */
+---
+
+<canvas class="plum-canvas" aria-hidden="true" data-plum></canvas>
+
+<script>
+  import { mountPlum } from '~/scripts/plum'
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-plum]')
+  if (canvas) mountPlum(canvas)
+</script>

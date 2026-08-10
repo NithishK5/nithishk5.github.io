@@ -1,0 +1,18 @@
+---
+/**
+ * Noise-driven dot field, scoped to whichever section contains it.
+ *
+ * The parent must be positioned (`position: relative`) and should clip
+ * overflow, since displaced dots extend slightly past the grid bounds.
+ */
+---
+
+<canvas class="dot-field" aria-hidden="true" data-dots></canvas>
+
+<script>
+  import { mountDots } from '~/scripts/dots'
+
+  document
+    .querySelectorAll<HTMLCanvasElement>('[data-dots]')
+    .forEach((canvas) => mountDots(canvas))
+</script>

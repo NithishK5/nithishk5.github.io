@@ -1,0 +1,33 @@
+---
+/**
+ * Project summary card.
+ *
+ * `index` drives both the displayed numeral and the reveal stagger, so cards
+ * resolve in reading order rather than all at once.
+ */
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  project: CollectionEntry<'projects'>
+  index: number
+}
+
+const { project, index } = Astro.props
+const { title, summary, category } = project.data
+
+/** Two-digit label, matching the 01/02/03 convention used across the site. */
+const numeral = String(index + 1).padStart(2, '0')
+---
+
+<a
+  class="card reveal"
+  style={`--i: ${index % 3}`}
+  href={`/projects/${project.id}`}
+  aria-label={`${title} — ${category}`}
+>
+  <div class="card-thumb" aria-hidden="true"><span>{numeral}</span></div>
+  <p class="card-tag">{category}</p>
+  <h3>{title}</h3>
+  <p>{summary}</p>
+  <p class="card-more">Read more ›</p>
+</a>

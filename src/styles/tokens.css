@@ -1,0 +1,102 @@
+/**
+ * Design tokens.
+ *
+ * Every colour, easing curve and layout constant used anywhere in the site is
+ * declared here. Components reference tokens only — no component should ever
+ * contain a raw hex value, because a raw hex cannot respond to theme changes.
+ *
+ * Colour approach, in short:
+ *   - Depth comes from stepped surfaces, never from borders or shadows.
+ *   - Text is never pure white on dark, or pure black on light. Pure #fff on
+ *     #000 glares at display sizes; #f5f5f7 reads as intentional.
+ *   - Every text/surface pair below meets WCAG AA (4.5:1) for body copy, and
+ *     AA-large (3:1) for display type above 24px.
+ */
+
+:root {
+  /* ---- Surfaces: 0 is the page, each step reads as slightly closer ---- */
+  --bg: #000;
+  --surface-1: #131316; /* alternating section bands */
+  --surface-2: #1c1c1f; /* cards at rest */
+  --surface-3: #26262a; /* cards on hover, inset wells */
+
+  /* ---- Text ---- */
+  --text: #f5f5f7;
+  --text-2: #9a9aa0; /* body and supporting copy */
+  --text-3: #8e8e93; /* eyebrows, labels, metadata */
+
+  --hairline: rgba(255, 255, 255, 0.11);
+  --accent: #2997ff;
+
+  /* ---- Generative art ----
+     RGB triplet kept separate from alpha so the same colour can be drawn at
+     different opacities on canvas without re-parsing a hex string per frame. */
+  --plum: 150, 150, 152;
+  --plum-alpha: 0.3;
+
+  --nav-bg: rgba(0, 0, 0, 0.6);
+
+  /* ---- Display gradient ----
+     Pale mint through steel blue, used sparingly on display type. Applied to
+     more than two headings per page it stops reading as emphasis. */
+  --g1: #eaf2ed;
+  --g2: #a4c6cf;
+  --g3: #5d87b2;
+
+  /* ---- Motion ----
+     `--ease` is the curve used across Apple's marketing pages: a slow start
+     and a long settle. Paired with 400–900ms durations it is the single
+     biggest contributor to perceived quality. */
+  --ease: cubic-bezier(0.28, 0.11, 0.32, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 300ms;
+  --dur-base: 550ms;
+  --dur-slow: 900ms;
+
+  /* ---- Layout ---- */
+  --container: 1024px;
+  --gutter: 32px;
+  --section-y: 140px;
+
+  /* ---- Type ---- */
+  --sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'Helvetica Neue', Inter, system-ui, sans-serif;
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+}
+
+/**
+ * Light theme.
+ *
+ * Not a simple inversion. The band surface is darkened further than a naive
+ * flip would suggest (#eeeef1 rather than #f5f5f7) so section boundaries stay
+ * legible, and the greys are darkened to compensate and hold AA against it.
+ */
+:root[data-theme='light'] {
+  --bg: #fff;
+  --surface-1: #eeeef1;
+  --surface-2: #fff;
+  --surface-3: #e2e2e6;
+
+  --text: #1d1d1f;
+  --text-2: #636368;
+  --text-3: #646469;
+
+  --hairline: rgba(0, 0, 0, 0.12);
+  --accent: #0071e3;
+
+  --plum: 120, 120, 124;
+  --plum-alpha: 0.34;
+
+  --nav-bg: rgba(255, 255, 255, 0.72);
+
+  --g1: #1d1d1f;
+  --g2: #2f5c74;
+  --g3: #3f7ba6;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --gutter: 22px;
+    --section-y: 96px;
+  }
+}
