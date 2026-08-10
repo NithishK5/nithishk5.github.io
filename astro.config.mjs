@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
+import icon from 'astro-icon'
 import sitemap from '@astrojs/sitemap'
 
 /**
@@ -24,7 +25,10 @@ export default defineConfig({
   // static, so this makes in-site navigation feel instant at negligible cost.
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
 
-  integrations: [sitemap()],
+  // astro-icon resolves each named icon from the installed Iconify set at
+  // build time and inlines it as SVG. Nothing is fetched at runtime and no
+  // client-side JavaScript is added.
+  integrations: [icon({ include: { 'simple-icons': ['*'] } }), sitemap()],
 
   vite: {
     build: {

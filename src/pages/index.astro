@@ -9,32 +9,13 @@
 import { getCollection } from 'astro:content'
 import DotField from '~/components/DotField.astro'
 import ProjectCard from '~/components/ProjectCard.astro'
-import SpecList, { type Spec } from '~/components/SpecList.astro'
+import Expertise from '~/components/Expertise.astro'
 import Base from '~/layouts/Base.astro'
 import { site } from '~/site.config'
 
 const featured = (await getCollection('projects', ({ data }) => data.featured && !data.draft))
   .sort((a, b) => a.data.order - b.data.order)
   .slice(0, 6)
-
-const specs: Spec[] = [
-  {
-    label: 'Machine learning',
-    body: 'PyTorch and TensorFlow for deep learning, scikit-learn for classical modelling. Transformer fine-tuning with LoRA, retrieval-augmented generation, and evaluation harnesses including LLM-as-judge.',
-  },
-  {
-    label: 'Languages',
-    body: 'Python as a first language, day to day. Java for systems work, TypeScript and JavaScript across the web stack, and SQL for anything that has to be queried rather than guessed at.',
-  },
-  {
-    label: 'Interfaces',
-    body: 'Vue and React, with a preference for hand-written CSS over utility frameworks when a design needs precision. Canvas and WebGL for generative and data-driven visuals.',
-  },
-  {
-    label: 'Infrastructure',
-    body: 'Docker for reproducible environments, GitHub Actions for continuous integration and deployment, and enough Linux to keep a server honest.',
-  },
-]
 
 /**
  * Experience, grouped into work and study.
@@ -111,6 +92,7 @@ const education: TimelineEntry[] = [
   </header>
 
   <section class="band" id="about">
+    <DotField />
     <div class="container">
       <p class="statement grad reveal">
         Curiosity about how things work, and how people could work with them.
@@ -160,16 +142,16 @@ const education: TimelineEntry[] = [
   </section>
 
   <section class="band" id="expertise">
+    <DotField />
     <div class="container">
       <p class="section-label reveal">Expertise</p>
       <h2 class="reveal" style="margin-bottom: 48px">What I work with.</h2>
-      <SpecList specs={specs} />
+      <Expertise />
     </div>
   </section>
 
-  <section id="experience" style="overflow: hidden">
-    <DotField />
-    <div class="container" style="position: relative; z-index: 1">
+  <section id="experience">
+    <div class="container">
       <p class="section-label reveal">Experience</p>
       <h2 class="reveal" style="margin-bottom: 56px">Where I've been.</h2>
 
@@ -204,6 +186,7 @@ const education: TimelineEntry[] = [
   </section>
 
   <section class="contact band" id="contact">
+    <DotField />
     <div class="container">
       <h2 class="grad reveal">Let's build something.</h2>
       <a class="contact-mail reveal" style="--i: 1" href={`mailto:${site.email}`}>{site.email}</a>

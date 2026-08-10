@@ -1,0 +1,109 @@
+---
+/**
+ * Expertise: a vertical tab list driving a shared tool panel.
+ *
+ * ## Why tabs rather than an accordion
+ *
+ * With a single shared panel, exactly one area must be selected at any moment,
+ * otherwise the panel has no defined state. That is the tab pattern, not the
+ * disclosure pattern, so it carries tab semantics: `role="tablist"`,
+ * `aria-selected`, `aria-controls` and a roving tabindex. Announcing this as an
+ * accordion would misdescribe how it actually behaves.
+ *
+ * ## Progressive enhancement
+ *
+ * Server-rendered, every panel is visible and stacked. The client script adds
+ * `is-enhanced`, which is the only thing that switches on the stacked-panel
+ * layout. Without JavaScript the section is longer but completely readable, and
+ * no content is trapped behind a control that does nothing.
+ *
+ * ## No layout shift
+ *
+ * Once enhanced, every panel occupies the same CSS grid cell and inactive ones
+ * are hidden with `visibility` rather than `display`. They keep their footprint,
+ * so the grid sizes to the tallest panel once and switching never moves the page.
+ * `visibility: hidden` also removes them from the accessibility tree, which is
+ * what a hidden tabpanel requires.
+ */
+import { Icon } from 'astro-icon/components'
+import { expertise } from '~/data/expertise'
+
+/** Two-letter fallback for tools with no brand mark. */
+function monogram(name: string): string {
+  const words = name.replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean)
+  if (words.length >= 2) return (words[0]![0]! + words[1]![0]!).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
+---
+
+<div class="xp" data-xp>
+  <div
+    class="xp-tabs"
+    role="tablist"
+    aria-orientation="vertical"
+    aria-label="Areas of expertise"
+  >
+    {
+      expertise.map((area, i) => (
+        <button
+          class="xp-tab reveal"
+          style={`--i: ${i}`}
+          role="tab"
+          id={`xp-tab-${area.id}`}
+          aria-controls={`xp-panel-${area.id}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+          data-xp-tab={area.id}
+        >
+          <span class="xp-tab-row">
+            <span class="xp-plus" aria-hidden="true" />
+            <span class="xp-tab-label">{area.label}</span>
+          </span>
+          <span class="xp-blurb">
+            <span>{area.blurb}</span>
+          </span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="xp-panels">
+    {
+      expertise.map((area, i) => (
+        <div
+          class="xp-panel"
+          role="tabpanel"
+          id={`xp-panel-${area.id}`}
+          aria-labelledby={`xp-tab-${area.id}`}
+          data-xp-panel={area.id}
+          data-active={i === 0 ? 'true' : 'false'}
+          tabindex="0"
+        >
+          <p class="xp-panel-label">{area.label}</p>
+          <ul class="xp-tools">
+            {area.tools.map((tool, t) => (
+              <li class="xp-tool" style={`--t: ${t}`}>
+                <span class="xp-tool-mark" aria-hidden="true">
+                  {tool.icon ? (
+                    <Icon name={`simple-icons:${tool.icon}`} />
+                  ) : (
+                    <span class="xp-tool-mono">{monogram(tool.name)}</span>
+                  )}
+                </span>
+                <span>
+                  <span class="xp-tool-name">{tool.name}</span>
+                  <span class="xp-tool-note">{tool.note}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  import { mountExpertise } from '~/scripts/expertise'
+  mountExpertise()
+</script>

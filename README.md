@@ -160,10 +160,14 @@ probabilistically. Branch rate drops from 0.8 to 0.5 after 30 steps, which produ
 trunk and a thinning canopy. At rate 0.5 the branching process is *critical* — expected
 offspring exactly one — so lineages die out naturally rather than exploding.
 
-The growth loop runs **headlessly at load**, recording every segment in draw order, and the
-recorded segments are then revealed as a function of scroll position. Growth is monotonic:
-scrolling up does not retract branches, which avoids a full redraw of up to 16,000 segments
-per frame.
+Growth is **driven by time, not by scroll**. On load the tree grows until every branch has
+either left the viewport or died out, then the animation loop cancels itself and the canvas
+holds the finished drawing. Steady-state cost is zero, and every reload gives a different
+tree. A 1512×860 viewport averages ~18,500 segments and finishes in roughly 17 seconds;
+raise `FPS` in the module to finish sooner.
+
+Segments are recorded as they are drawn for one reason only: so a finished tree can be
+repainted in the new colour when the theme is toggled, rather than being regrown.
 
 A radial CSS mask (`components.css`, `.plum-canvas`) hides the centre of the viewport. This
 is structural, not decorative — without it the branches grow through the headline.
@@ -173,6 +177,9 @@ is structural, not decorative — without it the branches grow through the headl
 A grid of dots displaced along vectors sampled from a 3D Perlin field, with time as the
 third dimension. Opacity is quantised into 8 buckets so each frame issues 8 draw batches
 rather than one state change per dot. Suspended entirely when off screen.
+
+Dots appear on the tinted `.band` sections only, never on the black ones, so the two
+backgrounds never compete. Bands clip them and lift their content above the canvas.
 
 ### Tuning
 

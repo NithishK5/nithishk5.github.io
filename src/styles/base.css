@@ -99,10 +99,21 @@ section {
   position: relative;
 }
 
-/** Alternating tinted band. Depth via surface step, never a border. */
+/**
+ * Alternating tinted band. Depth via surface step, never a border.
+ *
+ * Bands are the only sections that carry the dot field, so they clip it and
+ * establish the stacking order: canvas at 0, content above it.
+ */
 .band {
   background: var(--surface-1);
   border-block: 0.5px solid var(--hairline);
+  overflow: hidden;
+}
+
+.band > .container {
+  position: relative;
+  z-index: 1;
 }
 
 .eyebrow,
