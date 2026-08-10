@@ -7,6 +7,7 @@ repo: https://github.com/NithishK5/recipe-generation-nlp
 year: 2026
 featured: true
 order: 3
+cover: ../../assets/covers/recipe-generation.png
 ---
 
 ## Situation

@@ -5,6 +5,7 @@ category: Speech
 stack: [Python, SpeechRecognition]
 repo: https://github.com/NithishK5/VirtualAssistant.ai
 year: 2024
+cover: ../../assets/covers/voice-assistant.png
 featured: true
 order: 7
 ---

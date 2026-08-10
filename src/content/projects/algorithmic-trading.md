@@ -7,6 +7,7 @@ repo: https://github.com/NithishK5/Algorithmic_Trading_ML
 year: 2025
 featured: true
 order: 2
+cover: ../../assets/covers/algorithmic-trading.png
 ---
 
 ## Situation

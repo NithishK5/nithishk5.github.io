@@ -5,6 +5,7 @@ category: Systems
 stack: [Java, Graph algorithms]
 repo: https://github.com/NithishK5/BOSTON-METRO-SYSTEM
 year: 2023
+cover: ../../assets/covers/boston-metro.png
 ---
 
 ## Situation

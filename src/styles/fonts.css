@@ -1,0 +1,64 @@
+/**
+ * Typeface.
+ *
+ * ## Why self-host at all
+ *
+ * The stack used to begin with `-apple-system`, which meant the site rendered in
+ * SF Pro on a Mac and in Segoe UI or Roboto everywhere else. Those faces have
+ * different widths and different vertical metrics, so the tight negative
+ * tracking this design depends on looked wrong on the majority of machines that
+ * are not the one it was designed on.
+ *
+ * Shipping one font means everyone sees the same thing. Inter is the right
+ * choice here: it was drawn for user interfaces at the same sizes SF Pro targets,
+ * so the type scale and tracking carry over almost unchanged.
+ *
+ * ## The file
+ *
+ * One variable woff2, Latin subset, 47 KB, covering the full 100–900 weight axis.
+ * A static family at the three weights actually used would cost more, so the
+ * variable font is both smaller and more flexible.
+ *
+ * It is vendored into `public/fonts/` rather than pulled from a CDN or a package
+ * at build time. No third-party request on page load, nothing to fail in CI, and
+ * no privacy question about who is being told which visitor loaded the page.
+ *
+ * Inter is licensed under the SIL Open Font License; see
+ * `public/fonts/Inter-LICENSE.txt`, which ships with the site as the licence
+ * requires.
+ */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  /* `swap`: show fallback text immediately and swap when Inter arrives. Never
+     hide content waiting for a font to download. */
+  font-display: swap;
+  src: url('/fonts/inter-variable-latin.woff2') format('woff2');
+  /* Latin only. Everything on this site is English, and the extended ranges
+     would roughly double the file for glyphs that are never drawn. */
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/**
+ * Metric-matched fallback.
+ *
+ * With `font-display: swap`, the first paint uses a system font and then swaps.
+ * If the two faces have different metrics the text reflows on swap, which is the
+ * jolt you see on badly built sites.
+ *
+ * These overrides scale Arial so its line box matches Inter's almost exactly, so
+ * the swap changes the letterforms without moving a single line of text. The
+ * numbers are Inter's published metrics against Arial, not guesses.
+ */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  ascent-override: 90%;
+  descent-override: 22.43%;
+  line-gap-override: 0%;
+  size-adjust: 107.12%;
+}

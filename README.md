@@ -32,8 +32,8 @@ around a generative background that grows as you scroll.
 | Content     | Markdown + Zod schemas     | Adding a project is dropping in a file; a typo fails the build.      |
 | Hosting     | GitHub Pages via Actions   | Free, fast, and already where the domain points.                     |
 
-Total JavaScript shipped to the browser: **~7 KB**, all of it the two canvas animations and
-the scroll observers. There is no framework runtime on the client.
+Total JavaScript shipped to the browser: **~8 KB**, all of it the branch canvas, the tab
+behaviour and the scroll observers. There is no framework runtime on the client.
 
 ---
 
@@ -57,12 +57,16 @@ The dev server runs at <http://localhost:4321>.
 ```
 .
 ├── .github/workflows/     CI and Pages deployment
+├── scripts/
+│   └── generate-covers.py Renders the project cover art
 ├── public/                Copied verbatim into the build
 │   ├── CNAME              Custom domain for GitHub Pages
 │   ├── .nojekyll          Stops Pages running output through Jekyll
 │   ├── og.png             Social preview card (1200×630)
 │   └── favicon.svg
 ├── src/
+│   ├── assets/
+│   │   └── covers/        Generated project art, optimised by astro:assets
 │   ├── components/        Astro components, one concern each
 │   ├── content/
 │   │   └── projects/      One markdown file per project
@@ -151,7 +155,7 @@ that sit on it — darkening `--surface-1` in light mode already forced `--text-
 
 ## The generative background
 
-Two canvas layers, both purely decorative and both hidden from assistive technology.
+One canvas layer, purely decorative and hidden from assistive technology.
 
 ### Branches — `src/scripts/plum.ts`
 
@@ -172,19 +176,32 @@ repainted in the new colour when the theme is toggled, rather than being regrown
 A radial CSS mask (`components.css`, `.plum-canvas`) hides the centre of the viewport. This
 is structural, not decorative — without it the branches grow through the headline.
 
-### Dots — `src/scripts/dots.ts`
+### Project covers — `scripts/generate-covers.py`
 
-A grid of dots displaced along vectors sampled from a 3D Perlin field, with time as the
-third dimension. Opacity is quantised into 8 buckets so each frame issues 8 draw batches
-rather than one state change per dot. Suspended entirely when off screen.
+Each project card carries a 1600×900 cover rendered from that project's own subject matter:
+a street grid with two routes for CalmRoute, an attention matrix for the NLP work, a sensor
+fan for the driving simulation. They are drawn with pycairo from the same palette as the
+site, so they belong to the same visual family as the canvas backgrounds rather than
+reading as stock imagery.
 
-Dots appear on the tinted `.band` sections only, never on the black ones, so the two
-backgrounds never compete. Bands clip them and lift their content above the canvas.
+Renderers are seeded from their own filenames, so output is reproducible: re-running the
+script produces no diff unless a renderer changes.
+
+```bash
+pip install pycairo
+python3 scripts/generate-covers.py
+```
+
+Covers live in `src/assets/covers/`, not `public/`, so `astro:assets` converts them to
+responsive WebP at build time. The 720 KB of source PNG ships as roughly 140 KB of WebP.
+
+To give a project a cover, add `cover: ../../assets/covers/<name>.png` to its frontmatter.
+Projects without one fall back to the numeral treatment.
 
 ### Tuning
 
-Both modules expose their constants at the top of the file with comments explaining what
-each one does. Start with `BLOOM` (how much grows on load) and `--plum-alpha` (visibility).
+The module exposes its constants at the top of the file with comments explaining what each
+one does. Start with `FPS` (growth pace) and `--plum-alpha` (visibility).
 
 ---
 

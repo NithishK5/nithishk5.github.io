@@ -7,6 +7,7 @@ repo: https://github.com/NithishK5/MARL-Coordination-QLearning
 year: 2026
 featured: true
 order: 4
+cover: ../../assets/covers/marl-coordination.png
 ---
 
 ## Situation

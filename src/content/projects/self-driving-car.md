@@ -7,6 +7,7 @@ repo: https://github.com/NithishK5/Self-Driving-Car-Neural-Networks-and-ML-P-1
 year: 2024
 featured: true
 order: 6
+cover: ../../assets/covers/self-driving-car.png
 ---
 
 ## Situation

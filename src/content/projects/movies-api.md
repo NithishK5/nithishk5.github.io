@@ -5,6 +5,7 @@ category: Systems
 stack: [Java, REST]
 repo: https://github.com/NithishK5/Movies-API
 year: 2023
+cover: ../../assets/covers/movies-api.png
 ---
 
 ## Situation

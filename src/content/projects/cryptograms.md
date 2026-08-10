@@ -5,6 +5,7 @@ category: Systems
 stack: [Java]
 repo: https://github.com/NithishK5/Cryptograms
 year: 2023
+cover: ../../assets/covers/cryptograms.png
 ---
 
 ## Situation

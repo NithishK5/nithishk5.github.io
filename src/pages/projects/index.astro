@@ -1,7 +1,12 @@
 ---
 /**
  * Projects index — every non-draft project, grouped by category.
+ *
+ * Unlike the homepage rail, nothing here is hidden behind interaction. This is
+ * the complete list, and it is the page to send someone who wants to see all of
+ * the work rather than a selection of it.
  */
+import { Image } from 'astro:assets'
 import { getCollection } from 'astro:content'
 import Base from '~/layouts/Base.astro'
 
@@ -18,11 +23,14 @@ for (const project of projects) {
 }
 ---
 
-<Base title="Projects" description="Projects built by Nithish Kumar Megarajan across machine learning, natural language processing, security and simulation.">
+<Base
+  title="Projects"
+  description="Projects built by Nithish Kumar Megarajan across machine learning, natural language processing, security and simulation."
+>
   <section>
     <div class="container">
       <p class="section-label reveal">Projects</p>
-      <h2 class="grad reveal">Everything I've shipped.</h2>
+      <h1 class="page-title grad reveal">Everything I've shipped.</h1>
       <p class="lede reveal" style="--i: 1; margin-top: 20px">
         {projects.length} projects, newest first. Source is on GitHub for all of them.
       </p>
@@ -30,12 +38,38 @@ for (const project of projects) {
       {
         [...byCategory].map(([category, items]) => (
           <div style="margin-top: 72px">
-            <h3 class="section-label reveal">{category}</h3>
+            <h2 class="section-label reveal">{category}</h2>
             {items.map((project, i) => (
               <a class="entry reveal" style={`--i: ${i % 4}`} href={`/projects/${project.id}`}>
-                <p class="entry-meta">{project.data.year}</p>
-                <h4>{project.data.title}</h4>
-                <p>{project.data.summary}</p>
+                {/*
+                  The thumbnail box renders whether or not there is cover art, so
+                  every row shares one left edge. A ragged text column would be a
+                  worse trade than a few placeholder tiles.
+
+                  Covers carry the same `transition:name` as the homepage rail, so
+                  the morph into the detail page works from this page too.
+                */}
+                <div class="entry-thumb" aria-hidden="true">
+                  {project.data.cover ? (
+                    <Image
+                      src={project.data.cover}
+                      alt=""
+                      transition:name={`cover-${project.id}`}
+                      widths={[160, 320]}
+                      sizes="128px"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span>{String(project.data.year).slice(-2)}</span>
+                  )}
+                </div>
+
+                <div class="entry-body">
+                  <p class="entry-meta">{project.data.year}</p>
+                  <h3>{project.data.title}</h3>
+                  <p>{project.data.summary}</p>
+                </div>
               </a>
             ))}
           </div>

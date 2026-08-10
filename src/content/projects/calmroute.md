@@ -7,6 +7,7 @@ repo: https://github.com/NithishK5/calmroute
 year: 2026
 featured: true
 order: 1
+cover: ../../assets/covers/calmroute.png
 ---
 
 ## Situation

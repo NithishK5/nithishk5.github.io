@@ -1,5 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#000"/>
-  <text x="32" y="43" text-anchor="middle" font-family="-apple-system, SF Pro Display, Helvetica, sans-serif"
-        font-size="30" font-weight="600" letter-spacing="-1.5" fill="#f5f5f7">nk</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#000"/><g fill="#f5f5f7" transform="translate(10.00 42.56) scale(0.01432 -0.01432)"><path d="M398 655V0H138V1118H384L388 842H367Q414 987 505.0 1059.5Q596 1132 733 1132Q848 1132 934.0 1083.0Q1020 1034 1067.5 940.0Q1115 846 1115 711V0H855V671Q855 783 797.0 847.0Q739 911 637 911Q568 911 514.0 881.0Q460 851 429.0 793.5Q398 736 398 655Z" transform="translate(0 0)"/><path d="M376 352V667H417L820 1118H1125L631 567H577ZM138 0V1490H398V0ZM839 0 473 509 649 693 1151 0Z" transform="translate(1253 0)"/><path d="M326 -17Q259 -17 212.5 29.0Q166 75 166 143Q166 210 212.5 256.0Q259 302 326 302Q394 302 440.5 256.0Q487 210 487 143Q487 75 440.5 29.0Q394 -17 326 -17Z" transform="translate(2419 0)"/></g></svg>

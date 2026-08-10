@@ -4,14 +4,27 @@
  *
  * Rendered once in the base layout and shared by every route. Purely
  * decorative, so it is hidden from assistive technology entirely.
+ *
+ * Marked `transition:persist` so the element and its running animation survive
+ * client-side navigation. Without it, opening a project would discard a fully
+ * grown tree and start again from four seeds.
  */
 ---
 
-<canvas class="plum-canvas" aria-hidden="true" data-plum></canvas>
+<canvas class="plum-canvas" aria-hidden="true" data-plum transition:persist></canvas>
 
 <script>
+  import { mountOnce, onPageLoad } from '~/scripts/lifecycle'
   import { mountPlum } from '~/scripts/plum'
 
-  const canvas = document.querySelector<HTMLCanvasElement>('[data-plum]')
-  if (canvas) mountPlum(canvas)
+  /*
+   * `transition:persist` keeps this canvas across navigations, so a tree that
+   * has finished growing is not thrown away and regrown every time someone opens
+   * a project. `mountOnce` is the other half of that: without it each page load
+   * would start another animation loop on the same canvas.
+   */
+  onPageLoad(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-plum]')
+    if (canvas) mountOnce(canvas, 'plumMounted', () => mountPlum(canvas))
+  })
 </script>

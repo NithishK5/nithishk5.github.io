@@ -1,4 +1,18 @@
 /**
+ * Page title.
+ *
+ * Every page needs exactly one `h1` for document structure and for search
+ * engines, but only the hero name should carry full display scale. This gives
+ * subordinate pages a correct heading level at section-heading size.
+ */
+.page-title {
+  font-size: clamp(1.875rem, 4.5vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  line-height: 1.1;
+}
+
+/**
  * Component styles.
  *
  * Grouped by the component that owns them. Astro scopes styles per-component
@@ -24,15 +38,6 @@
   pointer-events: none;
   -webkit-mask-image: radial-gradient(circle at 50% 45%, transparent 8%, #000 72%);
   mask-image: radial-gradient(circle at 50% 45%, transparent 8%, #000 72%);
-}
-
-.dot-field {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
 }
 
 /** Establishes the stacking context that lifts content above .plum-canvas. */
@@ -165,7 +170,6 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-3);
-  animation: bob 2.6s var(--ease) infinite;
 }
 
 @keyframes bob {
@@ -180,6 +184,79 @@
   }
 }
 
+/**
+ * Hero entrance.
+ *
+ * Everything below the fold reveals on scroll, but the hero is already in view
+ * on load, so it has nothing to react to. Without this it is the only part of
+ * the page that simply appears — and it is the part that sets the tone.
+ *
+ * Driven by `animation` rather than the `transition` used for scroll reveals,
+ * because there is no class toggle to react to: it should run the moment the
+ * document paints. `both` fill holds the start frame during the delay, so
+ * nothing flashes into view before its turn.
+ *
+ * Timings are deliberately uneven. A constant interval reads mechanical; opening
+ * with a short gap and letting the later elements breathe reads composed.
+ */
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero > * {
+  animation: hero-in var(--dur-slow) var(--ease-out) both;
+}
+
+.hero > .eyebrow {
+  animation-delay: 80ms;
+}
+
+.hero > h1 {
+  animation-delay: 200ms;
+}
+
+.hero > .hero-sub {
+  animation-delay: 380ms;
+}
+
+.hero > .cta {
+  animation-delay: 540ms;
+}
+
+/*
+ * Two animations on one element: the entrance, then the idle bob.
+ *
+ * The bob is delayed until the entrance has finished, and is declared second so
+ * that it wins for the properties both animate. Trying to do this with a single
+ * keyframe set would mean rewriting the loop every time the entrance changes.
+ */
+.hero > .scroll-hint {
+  animation:
+    hero-in var(--dur-slow) var(--ease-out) 720ms both,
+    bob 2.6s var(--ease) 1620ms infinite;
+}
+
+/*
+ * Delays have to be zeroed, not just durations.
+ *
+ * The global reduced-motion rule collapses duration to 0.01ms but leaves the
+ * delay intact, and `both` fill holds the invisible start frame for the whole
+ * delay. The hero would sit blank for over a second before snapping in, which is
+ * worse than the animation it was meant to remove.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .hero > * {
+    animation-delay: 0ms !important;
+  }
+}
+
 /* ---------- statement + stats ---------- */
 
 .statement {
@@ -190,20 +267,53 @@
   max-width: 19ch;
 }
 
-/* 1px gaps over a hairline background render the grid rules without needing
-   per-cell borders that would double up at the seams. */
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1px;
-  background: var(--hairline);
-  border: 0.5px solid var(--hairline);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
   margin-top: 88px;
 }
 
+/**
+ * Lighter than the band it sits on, matching `.card`.
+ *
+ * These were previously `--bg` on a `--surface-1` band, which made them darker
+ * than their surroundings. Depth then reads backwards: the cards look like holes
+ * cut into the section rather than cards resting on it.
+ */
 .stat {
-  background: var(--bg);
-  padding: 32px 28px;
+  background: var(--surface-2);
+  border-radius: 20px;
+  padding: 30px 26px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--dur-base) var(--ease),
+    background var(--dur-base) var(--ease);
+}
+
+/* Specificity has to match `.stats .reveal.is-visible` below, which also sets
+   transform. A plain `.stat:hover` would lose to it and never fire. */
+.stats .reveal.is-visible:hover {
+  transform: translateY(-6px);
+  background: var(--surface-3);
+}
+
+/* A hairline drawing across the top edge, fading out as it goes. Staggered
+   behind the figure so it reinforces the same left-to-right reading order. */
+.stat-rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(90deg, var(--g2), transparent);
+  transition: width 1100ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 110ms + 260ms);
+}
+
+.stat.is-visible .stat-rule {
+  width: 100%;
 }
 
 .stat-k {
@@ -284,9 +394,14 @@
     opacity: 1;
     transform: none;
   }
+
+  .stat-rule {
+    width: 100%;
+    transition: none;
+  }
 }
 
-/* ---------- project cards ---------- */
+/* ---------- project rail ---------- */
 
 .section-head {
   display: flex;
@@ -297,46 +412,80 @@
   margin-bottom: 56px;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+.section-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.card {
-  background: var(--surface-2);
-  border-radius: 20px;
-  padding: 24px;
+/**
+ * Full-bleed horizontal gallery.
+ *
+ * The inline padding aligns the first card with the content column while letting
+ * the rail itself run edge to edge, so the next card peeks past the right margin
+ * instead of stopping at an invisible boundary. `scroll-padding-inline-start`
+ * makes snapped cards land on that same line rather than against the viewport.
+ */
+.rail {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-inline: max(var(--gutter), 50% - 512px);
+  scroll-padding-inline-start: max(var(--gutter), 50% - 512px);
+  /* Room for the hover lift, which would otherwise be clipped by the scroller. */
+  padding-block: 8px 12px;
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.rail:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+.rail-card {
+  flex: 0 0 clamp(260px, 40vw, 440px);
+  scroll-snap-align: start;
   display: flex;
   flex-direction: column;
-  transition:
-    transform var(--dur-base) var(--ease),
-    background var(--dur-base) var(--ease);
 }
 
-.card:hover {
-  transform: translateY(-6px);
-  background: var(--surface-3);
-}
-
-.card-thumb {
-  height: 160px;
-  border-radius: 12px;
-  background: var(--surface-3);
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  padding: 14px 18px;
-  margin-bottom: 20px;
+/* The cover is the object here, so it gets the full width of the item and the
+   text sits beneath it rather than inside a padded container. */
+.rail-media {
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
   overflow: hidden;
-  transition: background var(--dur-base) var(--ease);
+  background: var(--surface-2);
+  margin-bottom: 18px;
+  display: grid;
+  place-items: center;
+  transition: transform var(--dur-base) var(--ease);
 }
 
-.card:hover .card-thumb {
-  background: var(--surface-1);
+.rail-card:hover .rail-media {
+  transform: translateY(-6px);
 }
 
-.card-thumb span {
+.rail-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 900ms var(--ease);
+}
+
+.rail-card:hover .rail-media img {
+  transform: scale(1.04);
+}
+
+.rail-numeral {
   font-family: var(--mono);
   font-size: 56px;
   line-height: 0.8;
@@ -345,7 +494,7 @@
   opacity: 0.1;
 }
 
-.card-tag {
+.rail-tag {
   font-size: 11px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -353,18 +502,57 @@
   margin-bottom: 8px;
 }
 
-.card p {
+.rail-card h3 {
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.rail-card:hover h3 {
+  color: var(--accent);
+}
+
+.rail-summary {
   font-size: 14px;
   color: var(--text-2);
   line-height: 1.55;
   margin-top: 8px;
-  flex: 1;
 }
 
-.card-more {
-  font-size: 13px;
-  color: var(--accent);
-  margin-top: 18px;
+/* Hidden until the script confirms it can drive them. A visible control that
+   does nothing is worse than no control. */
+.rail-controls {
+  display: none;
+  gap: 10px;
+}
+
+.rail-controls.is-enhanced {
+  display: flex;
+}
+
+.rail-controls button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition:
+    background var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+}
+
+.rail-controls button:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.rail-controls button:disabled {
+  opacity: 0.32;
+  cursor: default;
 }
 
 /* ---------- expertise tabs ---------- */
@@ -786,10 +974,109 @@
 /* ---------- index listings ---------- */
 
 .entry {
-  display: block;
-  padding-block: 28px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding-block: 24px;
   border-top: 0.5px solid var(--hairline);
-  transition: background var(--dur-fast) var(--ease);
+}
+
+/* Rendered for every row, cover or not, so the text column shares one left
+   edge down the whole page. */
+.entry-thumb {
+  flex: none;
+  width: 128px;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface-2);
+  display: grid;
+  place-items: center;
+  transition: transform var(--dur-base) var(--ease);
+}
+
+.entry:hover .entry-thumb {
+  transform: translateY(-3px);
+}
+
+.entry-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Placeholder for projects with no cover art: the two-digit year, set the same
+   way as the rail's fallback numeral. */
+.entry-thumb span {
+  font-family: var(--mono);
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  opacity: 0.16;
+}
+
+.entry-body {
+  min-width: 0;
+}
+
+.entry h3 {
+  /* Sized as a list item, not as a section heading. The level is chosen for
+     document structure; the size is chosen for the layout. */
+  font-size: 17px;
+  letter-spacing: -0.015em;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.entry:hover h3 {
+  color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .entry-thumb {
+    width: 84px;
+  }
+}
+
+/* ---------- project pager ---------- */
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 80px;
+  padding-top: 28px;
+  border-top: 0.5px solid var(--hairline);
+}
+
+.pager-link {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 46%;
+}
+
+.pager-next {
+  text-align: right;
+  margin-inline-start: auto;
+}
+
+.pager-dir {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.pager-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.pager-link:hover .pager-title {
+  color: var(--accent);
 }
 
 .entry:last-of-type {
@@ -835,4 +1122,15 @@
   .spec-body p {
     padding: 0 20px 20px 56px;
   }
+}
+
+/* Project detail hero. Same generated cover as the card, at full width. */
+.project-cover {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 20px;
+  margin-top: 56px;
+  background: var(--surface-2);
 }

@@ -104,6 +104,8 @@ function monogram(name: string): string {
 </div>
 
 <script>
+  import { onPageLoad } from '~/scripts/lifecycle'
   import { mountExpertise } from '~/scripts/expertise'
-  mountExpertise()
+
+  onPageLoad(() => mountExpertise())
 </script>

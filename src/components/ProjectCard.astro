@@ -1,10 +1,12 @@
 ---
 /**
- * Project summary card.
+ * A single item in the project rail.
  *
- * `index` drives both the displayed numeral and the reveal stagger, so cards
- * resolve in reading order rather than all at once.
+ * Deliberately has no card chrome. The cover is the object, and the text sits
+ * beneath it rather than inside a container, so the image carries the full width
+ * of the item instead of being inset within a padded box.
  */
+import { Image } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
 
 interface Props {
@@ -13,21 +15,34 @@ interface Props {
 }
 
 const { project, index } = Astro.props
-const { title, summary, category } = project.data
+const { title, summary, category, cover } = project.data
 
-/** Two-digit label, matching the 01/02/03 convention used across the site. */
+/** Two-digit label, used when a project has no cover art. */
 const numeral = String(index + 1).padStart(2, '0')
 ---
 
-<a
-  class="card reveal"
-  style={`--i: ${index % 3}`}
-  href={`/projects/${project.id}`}
-  aria-label={`${title} — ${category}`}
->
-  <div class="card-thumb" aria-hidden="true"><span>{numeral}</span></div>
-  <p class="card-tag">{category}</p>
+<a class="rail-card" href={`/projects/${project.id}`}>
+  <div class="rail-media">
+    {
+      cover ? (
+        <Image
+          src={cover}
+          alt=""
+          transition:name={`cover-${project.id}`}
+          widths={[440, 880]}
+          sizes="(max-width: 640px) 82vw, 440px"
+          loading={index < 2 ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+      ) : (
+        <span class="rail-numeral" aria-hidden="true">
+          {numeral}
+        </span>
+      )
+    }
+  </div>
+
+  <p class="rail-tag">{category}</p>
   <h3>{title}</h3>
-  <p>{summary}</p>
-  <p class="card-more">Read more ›</p>
+  <p class="rail-summary">{summary}</p>
 </a>

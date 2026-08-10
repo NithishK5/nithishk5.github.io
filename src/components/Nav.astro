@@ -13,8 +13,8 @@ const isCurrent = (href: string): boolean =>
   href !== '/' && href.startsWith('/') && path.replace(/\/$/, '') === href.replace(/\/$/, '')
 ---
 
-<nav class="nav" aria-label="Primary">
-  <a class="mark" href="/" aria-label={`${site.name} — home`}>nk.</a>
+<nav class="nav" aria-label="Primary" transition:persist>
+  <a class="mark" href="/" data-nav-mark aria-label={`${site.name} — home`}>nk.</a>
 
   {
     site.nav.map((item) => (
@@ -28,8 +28,19 @@ const isCurrent = (href: string): boolean =>
 </nav>
 
 <script>
+  import { mountOnce, onPageLoad } from '~/scripts/lifecycle'
+  import { mountSamePageLink } from '~/scripts/nav'
   import { mountThemeToggle } from '~/scripts/theme'
 
-  const button = document.querySelector<HTMLElement>('[data-theme-toggle]')
-  if (button) mountThemeToggle(button)
+  // The nav persists across navigation, so both are wired up exactly once.
+  onPageLoad(() => {
+    const button = document.querySelector<HTMLElement>('[data-theme-toggle]')
+    if (button) mountOnce(button, 'themeMounted', () => mountThemeToggle(button))
+
+    // Every nav link, not just the wordmark: clicking "Projects" while already
+    // on /projects triggered the same jarring scroll reset.
+    document.querySelectorAll<HTMLAnchorElement>('.nav a[href^="/"]').forEach((link) => {
+      mountOnce(link, 'samePageMounted', () => mountSamePageLink(link))
+    })
+  })
 </script>

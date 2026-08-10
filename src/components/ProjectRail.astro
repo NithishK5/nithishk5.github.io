@@ -1,0 +1,63 @@
+---
+/**
+ * Horizontally scrolling gallery of featured projects.
+ *
+ * ## Why a rail here and a list on /projects
+ *
+ * A rail hides most of its contents behind interaction, which is the wrong trade
+ * for a complete index. Here it is a teaser sitting next to "All projects", so
+ * nothing is unreachable, and the covers get real width instead of being squeezed
+ * into a grid cell.
+ *
+ * ## Two render modes
+ *
+ * The controls belong in the section header, beside the "All projects" link, but
+ * the rail itself has to sit outside `.container` so it can run edge to edge.
+ * They cannot be siblings in the markup, so this component renders one or the
+ * other: pass `controlsOnly` for the header, omit it for the rail. The script
+ * finds both through their data attributes regardless of nesting.
+ *
+ * ## Scrolling
+ *
+ * Native overflow scrolling with CSS scroll snap does the work. The buttons only
+ * nudge `scrollLeft`, so trackpad swipes, touch drag and keyboard scrolling all
+ * keep working whether or not the script loads. Without JavaScript the rail still
+ * scrolls; the buttons stay hidden until the script marks them enhanced.
+ */
+import type { CollectionEntry } from 'astro:content'
+import ProjectCard from '~/components/ProjectCard.astro'
+
+interface Props {
+  projects: CollectionEntry<'projects'>[]
+  /** Render only the previous/next buttons, for placement in a section header. */
+  controlsOnly?: boolean
+}
+
+const { projects, controlsOnly = false } = Astro.props
+---
+
+{
+  controlsOnly ? (
+    <div class="rail-controls" data-rail-controls>
+      <button type="button" data-rail-prev aria-label="Previous projects" disabled>
+        ‹
+      </button>
+      <button type="button" data-rail-next aria-label="Next projects">
+        ›
+      </button>
+    </div>
+  ) : (
+    <div class="rail" data-rail tabindex="0" role="region" aria-label="Featured projects">
+      {projects.map((project, i) => (
+        <ProjectCard project={project} index={i} />
+      ))}
+    </div>
+  )
+}
+
+<script>
+  import { onPageLoad } from '~/scripts/lifecycle'
+  import { mountRail } from '~/scripts/rail'
+
+  onPageLoad(() => mountRail())
+</script>

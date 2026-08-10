@@ -5,10 +5,12 @@
  * Owns the <head>, the persistent chrome (nav, background canvas, footer) and
  * the global stylesheets. Every route renders through this.
  */
+import { ClientRouter } from 'astro:transitions'
 import Footer from '~/components/Footer.astro'
 import Nav from '~/components/Nav.astro'
 import PlumCanvas from '~/components/PlumCanvas.astro'
 import { site } from '~/site.config'
+import '~/styles/fonts.css'
 import '~/styles/tokens.css'
 import '~/styles/base.css'
 import '~/styles/components.css'
@@ -31,6 +33,42 @@ const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — AI eng
 // requires. Relative URLs here are the single most common cause of link
 // previews rendering blank.
 const canonical = new URL(Astro.url.pathname, Astro.site)
+
+/**
+ * Structured data, homepage only.
+ *
+ * Tells search engines that this site is about a person, and which person. The
+ * `sameAs` links are what let Google connect the site to the GitHub and LinkedIn
+ * profiles as one entity rather than three unrelated pages.
+ */
+const isHome = Astro.url.pathname === '/'
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  url: site.origin,
+  email: `mailto:${site.email}`,
+  jobTitle: 'AI engineer',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Melbourne',
+    addressRegion: 'VIC',
+    addressCountry: 'AU',
+  },
+  alumniOf: [
+    { '@type': 'CollegeOrUniversity', name: 'Monash University' },
+    { '@type': 'CollegeOrUniversity', name: 'University of Strathclyde' },
+  ],
+  knowsAbout: [
+    'Machine learning',
+    'Natural language processing',
+    'Reinforcement learning',
+    'Software engineering',
+  ],
+  sameAs: site.socials
+    .filter((s) => s.href.startsWith('http'))
+    .map((s) => s.href),
+}
 const socialImage = new URL(image, Astro.site)
 ---
 
@@ -57,12 +95,56 @@ const socialImage = new URL(image, Astro.site)
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImage} />
 
+    {/*
+      Preloaded because the font is discovered inside a stylesheet, which the
+      browser only parses after fetching it. Preloading starts the download in
+      parallel with the CSS instead of after it, which is the difference between
+      swapping during first paint and swapping visibly afterwards.
+
+      `crossorigin` is required on font preloads even for same-origin files:
+      fonts are always fetched in CORS mode, and without it the browser
+      downloads the file twice.
+    */}
+    <link
+      rel="preload"
+      href="/fonts/inter-variable-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    {/*
+      Paints mobile browser chrome to match the page instead of leaving a white
+      bar above a black site. Two values so the bar follows the active theme.
+    */}
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
     {/* Tells the browser to render form controls and scrollbars for the
         active theme, so native UI does not flash white on a dark page. */}
     <meta name="color-scheme" content="dark light" />
+
+    {/*
+      Client-side routing. Navigations swap the document instead of reloading it,
+      which is what makes a shared-element transition possible at all: the cover
+      art has to exist in both the old and new DOM for the browser to tween
+      between them.
+    */}
+    <ClientRouter />
+
+    {
+      isHome && (
+        <script
+          type="application/ld+json"
+          is:inline
+          set:html={JSON.stringify(personSchema)}
+        />
+      )
+    }
 
     {/*
       Applied before first paint, on purpose.
@@ -97,8 +179,11 @@ const socialImage = new URL(image, Astro.site)
     </div>
 
     <script>
+      import { onPageLoad } from '~/scripts/lifecycle'
       import { mountReveals } from '~/scripts/reveal'
-      mountReveals()
+
+      // Re-run after every navigation: the previous document's elements are gone.
+      onPageLoad(() => mountReveals())
     </script>
   </body>
 </html>

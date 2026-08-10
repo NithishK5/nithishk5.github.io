@@ -102,18 +102,40 @@ section {
 /**
  * Alternating tinted band. Depth via surface step, never a border.
  *
- * Bands are the only sections that carry the dot field, so they clip it and
- * establish the stacking order: canvas at 0, content above it.
+ * Two layers, and the reason is contrast rather than decoration.
+ *
+ * A solid fill shutters the fixed branch canvas, so the tree visibly stops at
+ * every band and the page reads as interrupted. A fully translucent fill fixes
+ * that but lets branches pass directly behind body copy, which measured at
+ * 3.7:1 against `--text-2` in light mode — under the 4.5:1 AA floor.
+ *
+ * So: an opaque core exactly the colour of `--surface-1`, covering the centre
+ * where the content column sits, fading to the translucent wash toward the
+ * margins where nothing is set. Branches stay visible down the outer edges and
+ * never sit behind text. The two layers are the same colour, so the transition
+ * reads as the canvas appearing rather than as a gradient.
+ *
+ * The gradient varies horizontally only, and that is the important part. An
+ * earlier version used a radial ellipse, but gradients are sized to each
+ * section's own box, so a band's top edge was already opaque while the section
+ * above it showed the canvas in full. The result was a hard horizontal seam at
+ * every boundary. With no vertical component there is nothing to cut.
+ *
+ * 540px is the 512px half-container plus margin, expressed in absolute units so
+ * the opaque core tracks the text column at any viewport rather than scaling
+ * with it. `max()` collapses it to nothing on screens too narrow to have margins.
  */
 .band {
-  background: var(--surface-1);
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0,
+      var(--surface-1) max(0px, 50% - 540px),
+      var(--surface-1) min(100%, 50% + 540px),
+      transparent 100%
+    ),
+    var(--band-bg);
   border-block: 0.5px solid var(--hairline);
-  overflow: hidden;
-}
-
-.band > .container {
-  position: relative;
-  z-index: 1;
 }
 
 .eyebrow,
@@ -208,5 +230,41 @@ section {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/**
+ * View transitions.
+ *
+ * The cover art carries the same `transition:name` on the rail card and on the
+ * project page, so the browser tweens one into the other rather than cutting.
+ * Everything else cross-fades on the site's own easing rather than the default.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease);
+}
+
+/* The cover is the subject of the transition, so it gets a longer, slower move
+   than the page fade around it. */
+::view-transition-group(*) {
+  animation-duration: 620ms;
+  animation-timing-function: var(--ease);
+}
+
+/**
+ * Reduced motion.
+ *
+ * The blanket `transition-duration` override elsewhere in this file does not
+ * reach view transitions: they are driven by their own generated animations on
+ * pseudo-elements, outside normal cascade inheritance. They have to be stopped
+ * explicitly or the page still slides for someone who asked it not to.
+ */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

@@ -6,6 +6,7 @@
  * becomes a static HTML file with no runtime data fetching.
  */
 import type { GetStaticPaths } from 'astro'
+import { Image } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
 import { getCollection, render } from 'astro:content'
 import Base from '~/layouts/Base.astro'
@@ -13,26 +14,40 @@ import Base from '~/layouts/Base.astro'
 /** Declaring Props is what types `Astro.props`; getStaticPaths cannot infer it. */
 interface Props {
   project: CollectionEntry<'projects'>
+  /** The entry before this one in the index order, i.e. the next newest. */
+  prev: CollectionEntry<'projects'> | null
+  /** The entry after this one, i.e. the next oldest. */
+  next: CollectionEntry<'projects'> | null
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const projects = await getCollection('projects', ({ data }) => !data.draft)
-  return projects.map((project) => ({
+  // Sorted identically to the index, so "previous" and "next" mean the same
+  // thing on both pages. Deriving the neighbours here keeps the pager static:
+  // no client-side lookup, no separate ordering to drift out of sync.
+  const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.year - a.data.year || a.data.title.localeCompare(b.data.title),
+  )
+
+  return projects.map((project, i) => ({
     params: { slug: project.id },
-    props: { project },
+    props: {
+      project,
+      prev: projects[i - 1] ?? null,
+      next: projects[i + 1] ?? null,
+    },
   }))
 }
 
-const { project } = Astro.props
+const { project, prev, next } = Astro.props
 const { Content } = await render(project)
-const { title, summary, category, stack, repo, demo, year } = project.data
+const { title, summary, category, stack, repo, demo, year, cover } = project.data
 ---
 
 <Base title={title} description={summary} type="article">
   <section>
     <div class="container">
       <p class="section-label reveal">{category} · {year}</p>
-      <h2 class="grad reveal">{title}</h2>
+      <h1 class="page-title grad reveal">{title}</h1>
       <p class="lede reveal" style="--i: 1; margin-top: 20px">{summary}</p>
 
       {
@@ -48,11 +63,55 @@ const { title, summary, category, stack, repo, demo, year } = project.data
         {demo && <a class="btn btn-ghost" href={demo}>Live demo&nbsp;›</a>}
       </div>
 
-      <article class="prose reveal" style="--i: 4; margin-top: 72px">
+      {
+        cover && (
+          <Image
+            class="project-cover reveal"
+            style="--i: 4"
+            src={cover}
+            alt=""
+            transition:name={`cover-${project.id}`}
+            widths={[800, 1200, 1600]}
+            sizes="(max-width: 1024px) 92vw, 1024px"
+            loading="eager"
+            decoding="async"
+          />
+        )
+      }
+
+      <article class="prose reveal" style="--i: 5; margin-top: 72px">
         <Content />
       </article>
 
-      <p style="margin-top: 72px">
+      {/*
+        A project page that ends should lead somewhere. Without this the only way
+        onward is the browser's back button, which is a dead end dressed up as
+        navigation.
+      */}
+      <nav class="pager" aria-label="Project navigation">
+        {
+          prev ? (
+            <a class="pager-link" href={`/projects/${prev.id}`} rel="prev">
+              <span class="pager-dir">‹ Previous</span>
+              <span class="pager-title">{prev.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next ? (
+            <a class="pager-link pager-next" href={`/projects/${next.id}`} rel="next">
+              <span class="pager-dir">Next ›</span>
+              <span class="pager-title">{next.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+      </nav>
+
+      <p style="margin-top: 40px">
         <a class="btn btn-ghost" href="/projects" style="padding-left: 0">‹&nbsp;All projects</a>
       </p>
     </div>

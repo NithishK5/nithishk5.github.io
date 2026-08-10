@@ -27,7 +27,10 @@ export const CATEGORIES = [
 
 const projects = defineCollection({
   loader: glob({ base: './src/content/projects', pattern: '**/*.md' }),
-  schema: z.object({
+  // `image()` resolves the path relative to the markdown file, verifies the file
+  // exists at build time, and hands the component real width and height so the
+  // card reserves space and never shifts layout as images load.
+  schema: ({ image }) => z.object({
     /** Human-readable name. Prefer prose over repo_snake_case. */
     title: z.string().min(1).max(60),
     /** One or two sentences. Shown on cards, so keep it tight. */
@@ -45,6 +48,11 @@ const projects = defineCollection({
     order: z.number().int().default(99),
     /** Hides the project everywhere without deleting the file. */
     draft: z.boolean().default(false),
+    /**
+     * Generated cover art. See scripts/generate-covers.py, which renders one
+     * per project from that project's own subject matter.
+     */
+    cover: image().optional(),
   }),
 })
 

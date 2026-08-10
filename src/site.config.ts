@@ -37,7 +37,6 @@ export const site: SiteConfig = {
   socials: [
     { label: 'GitHub', href: 'https://github.com/NithishK5' },
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/nithish-kumar-megarajan-2a17b31b4/' },
-    { label: 'X', href: 'https://x.com/NITHISH_5' },
     { label: 'Résumé', href: '/CV.pdf' },
   ],
   nav: [

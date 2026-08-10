@@ -7,6 +7,7 @@ repo: https://github.com/NithishK5/passkeys-express
 year: 2024
 featured: true
 order: 5
+cover: ../../assets/covers/passkey.png
 ---
 
 ## Situation
